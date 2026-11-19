@@ -6,30 +6,625 @@
     <title>Wall Of Fame Walikota Makassar</title>
     <!-- Tailwind CSS CDN untuk styling modern -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Proteksi Seleksi dan Drag */
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* Larangan simpan gambar via klik / drag */
+        img {
+            pointer-events: none;
+            -webkit-user-drag: none;
+            user-drag: none;
+        }
+
+        /* Proteksi Cetak / Print to PDF */
+        @media print {
+            body {
+                display: none !important;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Animasi Transisi Halus */
+        .smooth-zoom {
+            transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .dragging {
+            transition: none !important;
+        }
+    </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex items-center justify-center p-4">
-    
-    <main class="max-w-xl w-full bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200 p-8">
-        <header class="text-center mb-6">
-            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Profil & Informasi</span>
-            <h1 class="text-2xl font-bold text-slate-900 mt-3">Wall Of Fame Walikota Makassar</h1>
-        </header>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-transparent" oncontextmenu="return false;" ondragstart="return false;">
 
-        <!-- Posisi Logo di Tengah dengan proteksi agar tidak bisa disimpan/dicuri -->
-        <div class="flex justify-center mb-6">
-            <img src="logo.png" alt="Logo" class="h-20 w-auto object-contain select-none pointer-events-none" draggable="false" oncontextmenu="return false;">
+    <!-- TOAST NOTIFIKASI PROTEKSI -->
+    <div id="protectionToast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-red-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 pointer-events-none border border-red-400">
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <span class="text-sm font-medium">Gambar dilindungi hak cipta. Klik kanan dan pengunduhan dinonaktifkan.</span>
+    </div>
+
+    <!-- HEADER & INTRO SECTION -->
+    <header class="bg-slate-950/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="relative bg-white/10 p-2 rounded-xl backdrop-blur-sm border border-white/10 flex items-center justify-center">
+                    <img src="logo.png" alt="Logo" class="h-10 w-auto object-contain" draggable="false" oncontextmenu="return false;">
+                    <div class="absolute inset-0 bg-transparent" oncontextmenu="return false;"></div>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Arsip Sejarah</span>
+                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 28 Walikota
+                        </span>
+                    </div>
+                    <h1 class="text-lg sm:text-xl font-bold text-white tracking-tight mt-0.5">Wall Of Fame Walikota Makassar</h1>
+                </div>
+            </div>
+
+            <!-- SEARCH / FILTER -->
+            <div class="w-full sm:w-72">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Cari urutan Walikota (cth: 1, 15)..." 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
         </div>
+    </header>
 
-        <section class="text-slate-600 text-justify leading-relaxed space-y-4">
-            <p>
-                Wall of Fame Walikota Makassar adalah sebuah instalasi penghargaan khusus yang mendedikasikan apresiasi bagi para pemimpin dan tokoh berjasa di kota ini. Fasilitas ini menampilkan profil, sejarah kepemimpinan, serta rekam jejak pengabdian para Wali Kota Makassar dari masa ke masa. Kehadiran ruang apresiasi ini bertujuan untuk mengenang kontribusi penting dan dedikasi mereka dalam membangun kemajuan Kota Makassar. Selain sebagai pusat edukasi sejarah pemerintahan, tempat ini juga dirancang secara modern agar menarik minat kunjungan masyarakat luas. Melalui Wall of Fame ini, warga dapat mengenal lebih dekat figur-figur pemimpin yang telah meletakkan fondasi pembangunan kota berdarah seni dan budaya ini.
-            </p>
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        
+        <!-- INTRO CARD -->
+        <section class="bg-gradient-to-br from-slate-800/80 to-slate-900/90 border border-slate-700/60 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl backdrop-blur-sm">
+            <div class="max-w-4xl mx-auto text-center space-y-3">
+                <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider inline-block">Profil & Informasi</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Galeri Kepemimpinan Kota Makassar Dari Masa Ke Masa</h2>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed text-justify sm:text-center pt-2">
+                    Wall of Fame Walikota Makassar adalah instalasi penghargaan khusus yang mendedikasikan apresiasi bagi para pemimpin dan tokoh berjasa di kota ini. Fasilitas ini menampilkan profil, sejarah kepemimpinan, serta rekam jejak pengabdian para Wali Kota Makassar dari masa ke masa untuk mengenang kontribusi penting mereka dalam membangun kemajuan Kota Makassar. Klik pada foto mana saja untuk memperbesar (zoom) dan melihat detail banner secara penuh.
+                </p>
+                <div class="pt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-400">
+                    <span class="flex items-center gap-1.5 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-700/50">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg> Klik gambar untuk Zoom Interaktif
+                    </span>
+                    <span class="flex items-center gap-1.5 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-700/50">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg> Proteksi Anti Klik Kanan & Anti Unduh
+                    </span>
+                </div>
+            </div>
         </section>
 
-        <footer class="mt-8 text-center text-xs text-slate-400 border-t border-slate-100 pt-4">
-            &copy; 2026 Dee Management - wasdlabs.
-        </footer>
+        <!-- GALLERY GRID -->
+        <div id="galleryGrid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <!-- Item kartu akan dirender otomatis secara terurut 1 - 28 -->
+        </div>
+
+        <!-- NOT FOUND STATE -->
+        <div id="noResults" class="hidden text-center py-16">
+            <svg class="w-12 h-12 mx-auto text-slate-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-slate-400 font-medium">Walikota dengan nomor tersebut tidak ditemukan.</p>
+        </div>
+
     </main>
 
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-6 mt-12 text-center text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-2">
+                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                <p>&copy; 2026 Dee Management - wasdlabs. Seluruh Hak Cipta Dilindungi.</p>
+            </div>
+            <p class="text-slate-500 text-[11px]">Dilindungi dengan sistem proteksi enkapsulasi media & pelindung hak cipta.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL / LIGHTBOX ZOOM -->
+    <div id="zoomModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl hidden flex-col justify-between opacity-0 transition-opacity duration-300 select-none">
+        
+        <!-- TOP CONTROLS BAR -->
+        <div class="flex items-center justify-between px-4 sm:px-6 py-3 bg-black/60 border-b border-white/10 z-30">
+            <div class="flex items-center space-x-3">
+                <span id="modalNumberBadge" class="bg-amber-500 text-slate-950 text-xs font-bold px-2.5 py-1 rounded-md">
+                    Ke-1
+                </span>
+                <h3 id="modalTitle" class="text-sm sm:text-base font-semibold text-white truncate max-w-[200px] sm:max-w-md">
+                    Walikota Makassar Ke-1
+                </h3>
+                <span id="modalCounter" class="text-xs text-slate-400 hidden sm:inline-block">
+                    (1 / 28)
+                </span>
+            </div>
+
+            <!-- ZOOM & CLOSE CONTROLS -->
+            <div class="flex items-center space-x-2">
+                <!-- Zoom Out -->
+                <button id="btnZoomOut" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all focus:outline-none" title="Perkecil (-)">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                    </svg>
+                </button>
+                <!-- Zoom Reset -->
+                <button id="btnZoomReset" class="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-all focus:outline-none" title="Reset Zoom">
+                    <span id="zoomLevelText">100%</span>
+                </button>
+                <!-- Zoom In -->
+                <button id="btnZoomIn" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all focus:outline-none" title="Perbesar (+)">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                </button>
+                
+                <div class="w-px h-6 bg-white/20 mx-1"></div>
+
+                <!-- Close Button -->
+                <button id="btnCloseModal" class="p-2 rounded-lg bg-red-500/20 hover:bg-red-500 text-white transition-all focus:outline-none" title="Tutup (ESC)">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- MAIN IMAGE VIEWPORT -->
+        <div id="modalViewport" class="relative flex-1 overflow-hidden flex items-center justify-center p-2 sm:p-4 cursor-grab">
+            
+            <!-- IMAGE CONTAINER WITH TRANSFORM -->
+            <div id="modalTransformContainer" class="relative max-h-full max-w-full flex items-center justify-center smooth-zoom">
+                <img id="modalImg" src="" alt="Walikota Makassar" class="max-h-[82vh] w-auto max-w-full object-contain rounded-lg shadow-2xl pointer-events-none select-none" draggable="false" oncontextmenu="return false;">
+                
+                <!-- TRANSPARENT SHIELD OVERLAY (Protects image from right-click, dragging, or touch-hold save) -->
+                <div id="modalShield" class="absolute inset-0 bg-transparent z-20" oncontextmenu="return false;"></div>
+            </div>
+
+            <!-- PREV BUTTON -->
+            <button id="btnPrev" class="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/60 hover:bg-amber-500 hover:text-black border border-white/20 text-white transition-all shadow-xl focus:outline-none group" title="Sebelumnya (Panah Kiri)">
+                <svg class="w-6 h-6 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+
+            <!-- NEXT BUTTON -->
+            <button id="btnNext" class="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/60 hover:bg-amber-500 hover:text-black border border-white/20 text-white transition-all shadow-xl focus:outline-none group" title="Berikutnya (Panah Kanan)">
+                <svg class="w-6 h-6 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- BOTTOM HINT BAR -->
+        <div class="px-4 py-2.5 bg-black/70 border-t border-white/10 text-center text-xs text-slate-400 flex flex-wrap items-center justify-center gap-4 z-30">
+            <span>💡 <b>Tips:</b> Klik 2x untuk zoom cepat</span>
+            <span>•</span>
+            <span>Gunakan tombol <b>+</b> / <b>-</b> atau scroll mouse untuk zoom</span>
+            <span>•</span>
+            <span>Gunakan tombol panah <b>&larr;</b> / <b>&rarr;</b> untuk navigasi</span>
+            <span>•</span>
+            <span class="text-amber-400 font-medium">Gambar dilindungi Hak Cipta</span>
+        </div>
+    </div>
+
+    <!-- DATA & LOGIKA JAVASCRIPT -->
+    <script>
+        // DAFTAR LENGKAP 28 WALIKOTA MAKASSAR SECARA BERURUT DARI KE-1 S.D. KE-28
+        const walikotaData = [
+            { id: 1, file: "47927497-Walikota_Ke_-_1.jpg", title: "Walikota Makassar Ke-1" },
+            { id: 2, file: "0d24567a-Walikota_Ke_-_2.jpg", title: "Walikota Makassar Ke-2" },
+            { id: 3, file: "9ceccdee-Walikota_Ke_-_3.jpg", title: "Walikota Makassar Ke-3" },
+            { id: 4, file: "a844ee6d-Walikota_Ke_-_4.jpg", title: "Walikota Makassar Ke-4" },
+            { id: 5, file: "1a6d72a8-Walikota_Ke_-_5.jpg", title: "Walikota Makassar Ke-5" },
+            { id: 6, file: "b2d6e3ae-Walikota_Ke_-_6.jpg", title: "Walikota Makassar Ke-6" },
+            { id: 7, file: "5c52c710-Walikota_Ke_-_7.jpg", title: "Walikota Makassar Ke-7" },
+            { id: 8, file: "84f2898f-Walikota_Ke_-_8.jpg", title: "Walikota Makassar Ke-8" },
+            { id: 9, file: "94836c10-Walikota_Ke_-_9.jpg", title: "Walikota Makassar Ke-9" },
+            { id: 10, file: "321778af-Walikota_Ke_-_10.jpg", title: "Walikota Makassar Ke-10" },
+            { id: 11, file: "53323c9d-Walikota_Ke_-_11.jpg", title: "Walikota Makassar Ke-11" },
+            { id: 12, file: "a7e900eb-Walikota_Ke_-_12.jpg", title: "Walikota Makassar Ke-12" },
+            { id: 13, file: "af3c4af9-Walikota_Ke_-_13.jpg", title: "Walikota Makassar Ke-13" },
+            { id: 14, file: "5213c253-Walikota_Ke_-_14.jpg", title: "Walikota Makassar Ke-14" },
+            { id: 15, file: "058c5dea-Walikota_Ke_-_15.jpg", title: "Walikota Makassar Ke-15" },
+            { id: 16, file: "443a384b-Walikota_Ke_-_16.jpg", title: "Walikota Makassar Ke-16" },
+            { id: 17, file: "1276d603-Walikota_Ke_-_17.jpg", title: "Walikota Makassar Ke-17" },
+            { id: 18, file: "cc105886-Walikota_Ke_-_18.jpg", title: "Walikota Makassar Ke-18" },
+            { id: 19, file: "b6652cdf-Walikota_Ke_-_19.jpg", title: "Walikota Makassar Ke-19" },
+            { id: 20, file: "dd5b603e-Walikota_Ke_-_20.jpg", title: "Walikota Makassar Ke-20" },
+            { id: 21, file: "573dd5f1-Walikota_Ke_-_21.jpg", title: "Walikota Makassar Ke-21" },
+            { id: 22, file: "9e6f76d7-Walikota_Ke_-_22.jpg", title: "Walikota Makassar Ke-22" },
+            { id: 23, file: "eb3c258c-Walikota_Ke_-_23.jpg", title: "Walikota Makassar Ke-23" },
+            { id: 24, file: "892415bd-Walikota_Ke_-_24.jpg", title: "Walikota Makassar Ke-24" },
+            { id: 25, file: "42e18af0-Walikota_Ke_-_25.jpg", title: "Walikota Makassar Ke-25" },
+            { id: 26, file: "ea645d15-Walikota_Ke_-_26.jpg", title: "Walikota Makassar Ke-26" },
+            { id: 27, file: "a4978afc-Walikota_Ke_-_27.jpg", title: "Walikota Makassar Ke-27" },
+            { id: 28, file: "23e42fec-Walikota_Ke_-_28.jpg", title: "Walikota Makassar Ke-28" }
+        ];
+
+        let currentIndex = 0;
+        let scale = 1;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+
+        const galleryGrid = document.getElementById('galleryGrid');
+        const searchInput = document.getElementById('searchInput');
+        const noResults = document.getElementById('noResults');
+
+        // Modal Elements
+        const zoomModal = document.getElementById('zoomModal');
+        const modalImg = document.getElementById('modalImg');
+        const modalTransformContainer = document.getElementById('modalTransformContainer');
+        const modalShield = document.getElementById('modalShield');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalNumberBadge = document.getElementById('modalNumberBadge');
+        const modalCounter = document.getElementById('modalCounter');
+        const zoomLevelText = document.getElementById('zoomLevelText');
+        const modalViewport = document.getElementById('modalViewport');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const btnCloseModal = document.getElementById('btnCloseModal');
+        const btnZoomIn = document.getElementById('btnZoomIn');
+        const btnZoomOut = document.getElementById('btnZoomOut');
+        const btnZoomReset = document.getElementById('btnZoomReset');
+        const protectionToast = document.getElementById('protectionToast');
+
+        // FUNGSI TAMPILKAN TOAST PERINGATAN PROTEKSI
+        let toastTimeout;
+        function showProtectionAlert() {
+            clearTimeout(toastTimeout);
+            protectionToast.classList.remove('translate-y-24', 'opacity-0');
+            protectionToast.classList.add('translate-y-0', 'opacity-100');
+            toastTimeout = setTimeout(() => {
+                protectionToast.classList.remove('translate-y-0', 'opacity-100');
+                protectionToast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // 1. RENDER GALERI SECARA TERURUT
+        function renderGallery(items) {
+            galleryGrid.innerHTML = '';
+            if (items.length === 0) {
+                noResults.classList.remove('hidden');
+                return;
+            }
+            noResults.classList.add('hidden');
+
+            items.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = "group relative bg-slate-800/90 rounded-2xl overflow-hidden border border-slate-700/80 shadow-lg hover:shadow-2xl hover:border-amber-500/50 transition-all duration-300 hover:-translate-y-1.5 flex flex-col cursor-pointer";
+                
+                // Struktur Kartu dengan Pelindung Transparan (Shield Overlay)
+                card.innerHTML = `
+                    <div class="relative w-full aspect-[1/2] bg-slate-950 overflow-hidden">
+                        <!-- Gambar Banner Asli -->
+                        <img src="${item.file}" alt="${item.title}" loading="lazy" class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105 pointer-events-none select-none" draggable="false" oncontextmenu="return false;">
+                        
+                        <!-- Transparent Protection Shield (Melindungi dari direct right-click & drag) -->
+                        <div class="absolute inset-0 z-10 bg-transparent" oncontextmenu="return false;"></div>
+
+                        <!-- Badge Nomor Urut -->
+                        <div class="absolute top-3 left-3 z-20">
+                            <span class="bg-amber-500 text-slate-950 font-extrabold text-xs px-2.5 py-1 rounded-lg shadow-md border border-amber-400 flex items-center gap-1">
+                                #${item.id}
+                            </span>
+                        </div>
+
+                        <!-- Hover Overlay Icon Zoom -->
+                        <div class="absolute inset-0 z-20 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4 text-center">
+                            <div class="w-12 h-12 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300 mb-2">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-white tracking-wide bg-black/70 px-3 py-1 rounded-full border border-white/20">Klik Untuk Memperbesar</span>
+                        </div>
+                    </div>
+
+                    <!-- Footer Info Kartu -->
+                    <div class="p-3.5 bg-slate-900 border-t border-slate-700/60 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">Walikota Makassar</span>
+                            <h3 class="text-xs sm:text-sm font-bold text-white group-hover:text-amber-400 transition-colors">Urutan Ke-${item.id}</h3>
+                        </div>
+                        <span class="text-slate-500 group-hover:text-amber-400 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </span>
+                    </div>
+                `;
+
+                // Buka Modal Zoom saat diklik
+                card.addEventListener('click', () => {
+                    const originalIndex = walikotaData.findIndex(w => w.id === item.id);
+                    openModal(originalIndex);
+                });
+
+                galleryGrid.appendChild(card);
+            });
+        }
+
+        // 2. LOGIKA LIGHTBOX MODAL & ZOOM
+        function openModal(index) {
+            currentIndex = index;
+            updateModalContent();
+            resetZoom();
+
+            zoomModal.classList.remove('hidden');
+            setTimeout(() => {
+                zoomModal.classList.remove('opacity-0');
+            }, 10);
+            document.body.style.overflow = 'hidden'; // Stop scroll latar belakang
+        }
+
+        function closeModal() {
+            zoomModal.classList.add('opacity-0');
+            setTimeout(() => {
+                zoomModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                resetZoom();
+            }, 300);
+        }
+
+        function updateModalContent() {
+            const currentItem = walikotaData[currentIndex];
+            modalImg.src = currentItem.file;
+            modalTitle.textContent = currentItem.title;
+            modalNumberBadge.textContent = `Ke-${currentItem.id}`;
+            modalCounter.textContent = `(${currentItem.id} / ${walikotaData.length})`;
+        }
+
+        function updateTransform() {
+            modalTransformContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            zoomLevelText.textContent = `${Math.round(scale * 100)}%`;
+
+            if (scale > 1) {
+                modalViewport.style.cursor = 'grab';
+                modalTransformContainer.classList.remove('smooth-zoom');
+            } else {
+                modalViewport.style.cursor = 'default';
+                modalTransformContainer.classList.add('smooth-zoom');
+                panX = 0;
+                panY = 0;
+                modalTransformContainer.style.transform = `scale(1)`;
+            }
+        }
+
+        function zoomIn() {
+            if (scale < 3.5) {
+                scale = Math.min(scale + 0.5, 3.5);
+                updateTransform();
+            }
+        }
+
+        function zoomOut() {
+            if (scale > 1) {
+                scale = Math.max(scale - 0.5, 1);
+                if (scale === 1) {
+                    panX = 0;
+                    panY = 0;
+                }
+                updateTransform();
+            }
+        }
+
+        function resetZoom() {
+            scale = 1;
+            panX = 0;
+            panY = 0;
+            updateTransform();
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % walikotaData.length;
+            resetZoom();
+            updateModalContent();
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + walikotaData.length) % walikotaData.length;
+            resetZoom();
+            updateModalContent();
+        }
+
+        // EVENT LISTENERS MODAL CONTROLS
+        btnNext.addEventListener('click', (e) => { e.stopPropagation(); nextSlide(); });
+        btnPrev.addEventListener('click', (e) => { e.stopPropagation(); prevSlide(); });
+        btnCloseModal.addEventListener('click', (e) => { e.stopPropagation(); closeModal(); });
+        btnZoomIn.addEventListener('click', (e) => { e.stopPropagation(); zoomIn(); });
+        btnZoomOut.addEventListener('click', (e) => { e.stopPropagation(); zoomOut(); });
+        btnZoomReset.addEventListener('click', (e) => { e.stopPropagation(); resetZoom(); });
+
+        // Klik 2x pada shield untuk Toggle Zoom (100% <-> 200%)
+        modalShield.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            if (scale === 1) {
+                scale = 2;
+                panX = 0;
+                panY = 0;
+            } else {
+                scale = 1;
+                panX = 0;
+                panY = 0;
+            }
+            updateTransform();
+        });
+
+        // Zoom via Scroll Wheel
+        modalViewport.addEventListener('wheel', (e) => {
+            if (!zoomModal.classList.contains('hidden')) {
+                e.preventDefault();
+                if (e.deltaY < 0) {
+                    zoomIn();
+                } else {
+                    zoomOut();
+                }
+            }
+        }, { passive: false });
+
+        // Pan / Dragging saat Gambar Terzoom (> 1x)
+        modalShield.addEventListener('mousedown', (e) => {
+            if (scale > 1) {
+                isDragging = true;
+                startX = e.clientX - panX;
+                startY = e.clientY - panY;
+                modalViewport.style.cursor = 'grabbing';
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging && scale > 1) {
+                panX = e.clientX - startX;
+                panY = e.clientY - startY;
+                modalTransformContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                if (scale > 1) {
+                    modalViewport.style.cursor = 'grab';
+                }
+            }
+        });
+
+        // Touch Support untuk Mobile Dragging saat Zoom
+        modalShield.addEventListener('touchstart', (e) => {
+            if (scale > 1 && e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - panX;
+                startY = e.touches[0].clientY - panY;
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (isDragging && scale > 1 && e.touches.length === 1) {
+                panX = e.touches[0].clientX - startX;
+                panY = e.touches[0].clientY - startY;
+                modalTransformContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Navigasi Keyboard
+        window.addEventListener('keydown', (e) => {
+            if (zoomModal.classList.contains('hidden')) return;
+
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+            if (e.key === '+' || e.key === '=') zoomIn();
+            if (e.key === '-' || e.key === '_') zoomOut();
+            if (e.key === '0') resetZoom();
+        });
+
+        // Tutup modal jika klik di luar gambar
+        modalViewport.addEventListener('click', (e) => {
+            if (e.target === modalViewport && scale === 1) {
+                closeModal();
+            }
+        });
+
+        // FITUR FILTER / SEARCH
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            if (!query) {
+                renderGallery(walikotaData);
+                return;
+            }
+            const filtered = walikotaData.filter(item => {
+                return item.id.toString() === query || 
+                       item.title.toLowerCase().includes(query) ||
+                       `walikota ${item.id}`.includes(query);
+            });
+            renderGallery(filtered);
+        });
+
+        // ========================================================
+        // FITUR PROTEKSI MENYELURUH (ANTI KLIK KANAN, ANTI SAVE)
+        // ========================================================
+
+        // 1. Matikan Klik Kanan di Seluruh Dokumen
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            showProtectionAlert();
+            return false;
+        });
+
+        // 2. Matikan Drag & Drop Gambar
+        document.addEventListener('dragstart', (e) => {
+            e.preventDefault();
+            return false;
+        });
+
+        // 3. Matikan Shortcut Keyboard Khusus Penyimpanan & Inspeksi
+        document.addEventListener('keydown', (e) => {
+            // F12 (Inspect Element)
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+                showProtectionAlert();
+                return false;
+            }
+
+            // Ctrl/Cmd + S (Save Page), Ctrl/Cmd + U (View Source), Ctrl/Cmd + P (Print)
+            if ((e.ctrlKey || e.metaKey) && (
+                e.key === 's' || e.key === 'S' ||
+                e.key === 'u' || e.key === 'U' ||
+                e.key === 'p' || e.key === 'P'
+            )) {
+                e.preventDefault();
+                showProtectionAlert();
+                return false;
+            }
+
+            // Ctrl/Cmd + Shift + I, C, J (DevTools)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (
+                e.key === 'I' || e.key === 'i' ||
+                e.key === 'C' || e.key === 'c' ||
+                e.key === 'J' || e.key === 'j'
+            )) {
+                e.preventDefault();
+                showProtectionAlert();
+                return false;
+            }
+        });
+
+        // Render Pertama Kali
+        renderGallery(walikotaData);
+    </script>
 </body>
 </html>
